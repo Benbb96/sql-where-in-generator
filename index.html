@@ -208,6 +208,40 @@
       renderHistory();
     }
 
+    function loadHistoryItem(clause) {
+      // Parse the SQL clause to extract field name, values, and quote setting
+      const match = clause.match(/^(.+?)\s+IN\s+\((.+)\)$/i);
+      if (match) {
+        const fieldName = match[1].trim();
+        const valuesStr = match[2].trim();
+        
+        // Extract values and determine if they were quoted
+        const values = [];
+        let hasQuotes = false;
+        
+        // Split by comma and clean up each value
+        const rawValues = valuesStr.split(',');
+        rawValues.forEach(val => {
+          const trimmed = val.trim();
+          if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
+            // Remove quotes and handle escaped quotes
+            values.push(trimmed.slice(1, -1).replaceAll("''", "'"));
+            hasQuotes = true;
+          } else {
+            values.push(trimmed);
+          }
+        });
+        
+        // Populate the form fields
+        field.value = fieldName;
+        input.value = values.join('\n');
+        addQuotes.checked = hasQuotes;
+        
+        // Trigger clause generation to update the output
+        generateClause();
+      }
+    }
+
     function renderHistory() {
       historyList.innerHTML = '';
       history.forEach((clause, index) => {
@@ -218,6 +252,12 @@
         div.className = 'output';
         div.title = clause;
         div.textContent = clause;
+
+        const loadBtn = document.createElement('button');
+        loadBtn.className = 'info';
+        loadBtn.onclick = () => loadHistoryItem(clause);
+        loadBtn.innerText = 'Load';
+        loadBtn.title = 'Load this clause into the input fields';
 
         const copyBtn = document.createElement('button');
         copyBtn.onclick = copyClause;
@@ -231,6 +271,7 @@
         deleteBtn.title = 'Remove this clause from history';
 
         container.appendChild(div);
+        container.appendChild(loadBtn);
         container.appendChild(copyBtn);
         container.appendChild(deleteBtn);
         historyList.appendChild(container);
