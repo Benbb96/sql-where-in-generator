@@ -132,7 +132,7 @@
     disabled>
     Save into history
   </button>
-  <button class="warning" onclick="clearInputs()" title="Clear all input fields">
+  <button class="warning" onclick="clearInputs()" id="clearInputsBtn" title="Clear all input fields" disabled>
     Clear inputs
   </button>
 
@@ -152,6 +152,7 @@
     const output = document.getElementById('output');
     const copyBtn = document.getElementById('copyBtn');
     const saveIntoHistoryBtn = document.getElementById('saveIntoHistory');
+    const clearInputsBtn = document.getElementById('clearInputsBtn');
     const historyList = document.getElementById('historyList');
     const maxHistory = 20;
     const HISTORY_STORAGE_KEY = 'sql-where-generator-history';
@@ -170,10 +171,18 @@
       output.textContent = clause;
       copyBtn.disabled = false;
       saveIntoHistoryBtn.disabled = false;
+      
+      // Enable clear button if there's any input
+      const hasInput = input.value.trim() || field.value.trim();
+      clearInputsBtn.disabled = !hasInput;
     }
 
     if (getInput().length) {
       generateClause()
+    } else {
+      // Initial state - disable clear button if no input
+      const hasInput = input.value.trim() || field.value.trim();
+      clearInputsBtn.disabled = !hasInput;
     }
 
     input.addEventListener('input', generateClause);
@@ -212,6 +221,7 @@
       output.textContent = '';
       copyBtn.disabled = true;
       saveIntoHistoryBtn.disabled = true;
+      clearInputsBtn.disabled = true;
     }
 
     function deleteHistoryItem(index) {
