@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,10 +15,13 @@
       margin-left: auto;
       margin-right: auto;
     }
+
     h1 {
       font-size: 1.5rem;
     }
-    textarea, input[type="text"] {
+
+    textarea,
+    input[type="text"] {
       width: 100%;
       padding: 0.5rem;
       margin-bottom: 1rem;
@@ -26,12 +30,14 @@
       font-family: monospace;
       resize: vertical;
     }
+
     label {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       margin-bottom: 1rem;
     }
+
     button {
       padding: 0.5rem 1rem;
       margin-right: 0.5rem;
@@ -41,16 +47,20 @@
       border-radius: 4px;
       cursor: pointer;
     }
+
     button.info {
       background-color: #56b0ff;
     }
+
     button.warning {
       background-color: #f29b3e;
     }
+
     button:disabled {
       background-color: #999;
       cursor: not-allowed;
     }
+
     .output {
       background-color: #fff;
       border: 1px solid #ddd;
@@ -60,38 +70,46 @@
       text-overflow: ellipsis;
       flex: 1;
     }
+
     #copyBtn {
       margin-top: 1rem;
     }
+
     h3 {
       margin-top: 3rem;
       margin-bottom: 0.5rem;
     }
+
     .history {
       margin-top: 2rem;
     }
+
     .history h2 {
       margin-bottom: 0.5rem;
       display: flex;
       gap: 1rem;
     }
+
     .history .history-container {
       display: flex;
       align-items: stretch;
       gap: 1rem;
       margin-bottom: 1rem;
     }
+
     .history .history-container .output {
       display: flex;
       align-items: center;
       height: 100%;
     }
+
     .history .history-container button {
       align-self: center;
       height: 100%;
     }
   </style>
 </head>
+
 <body>
   <h1>SQL WHERE IN Generator</h1>
 
@@ -107,13 +125,19 @@
   <h3>Generated WHERE clause</h3>
   <div id="output" class="output"></div>
 
-  <button onclick="copyClause(event)" id="copyBtn" disabled>Copy</button>
-  <button class="info" onclick="saveIntoHistory()" id="saveIntoHistory" disabled>Save into history</button>
+  <button onclick="copyClause(event)" id="copyBtn" title="Copy the generated clause to your clipboard" disabled>
+    Copy
+  </button>
+  <button class="info" onclick="saveIntoHistory()" id="saveIntoHistory" title="Save that clause into History section"
+    disabled>
+    Save into history
+  </button>
 
   <div class="history">
     <h2>
       History
-      <button class="warning" onclick="clearHistory()">Clear</button>
+      <button class="warning" onclick="clearHistory()"
+        title="Remove all saved clauses from History section">Clear</button>
     </h2>
     <div id="historyList"></div>
   </div>
@@ -189,6 +213,7 @@
         const copyBtn = document.createElement('button');
         copyBtn.onclick = copyClause;
         copyBtn.innerText = 'Copy';
+        copyBtn.title = 'Copy this saved clause to your clipboard';
 
         container.appendChild(div);
         container.appendChild(copyBtn);
@@ -197,4 +222,5 @@
     }
   </script>
 </body>
+
 </html>
