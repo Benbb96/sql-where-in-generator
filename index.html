@@ -126,7 +126,7 @@
   <h3>Generated WHERE clause</h3>
   <div id="output" class="output"></div>
 
-  <button onclick="copyClause(event)" id="copyBtn" title="Copy the generated clause to your clipboard" disabled>
+  <button onclick="copyClause(this)" id="copyBtn" title="Copy the generated clause to your clipboard" disabled>
     Copy
   </button>
   <button class="info" onclick="saveIntoHistory()" id="saveIntoHistory" title="Save that clause into History section"
@@ -155,38 +155,30 @@
     const saveIntoHistoryBtn = document.getElementById('saveIntoHistory');
     const clearInputsBtn = document.getElementById('clearInputsBtn');
     const historyList = document.getElementById('historyList');
-    const maxHistory = 15;
+    const MAX_HISTORY_LENGTH = 15;
     const HISTORY_STORAGE_KEY = 'sql-where-generator-history';
 
     const history = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY)) || [];
 
     function generateClause() {
       const lines = input.value.split('\n').map(l => l.trim().replaceAll("'", "''")).filter(Boolean);
-      
-      if (lines.length) {
-        const column = field.value.trim() || 'sql_column';
-        const clause = `${column} IN (${lines.map(v => addQuotes.checked ? `'${v}'` : v).join(',')})`;
-        output.textContent = clause;
-      }
-      
-      clearInputsBtn.disabled = lines.length === 0;
+      const column = field.value.trim() || 'sql_column';
+      const clause = `${column} IN (${lines.map(v => addQuotes.checked ? `'${v}'` : v).join(',')})`;
+      output.textContent = clause;
+
+      // Update disabled state of buttons
       copyBtn.disabled = lines.length === 0;
       saveIntoHistoryBtn.disabled = lines.length === 0;
+      clearInputsBtn.disabled = lines.length === 0;
     }
 
     generateClause()
 
-    function copyClause(e) {
-      const clause = [...e.target.parentElement.children].find((child) => child.className === 'output')?.innerText;
-      if (!clause) {
-        alert('No generated clause were found');
-        return;
-      }
-
-      navigator.clipboard.writeText(clause)
+    function copyClause(btn, clause) {
+      navigator.clipboard.writeText(clause ?? output.innerText)
         .then(() => {
-          e.target.innerText = 'Copied!';
-          setTimeout(() => e.target.innerText = 'Copy', 1500)
+          btn.innerText = 'Copied!';
+          setTimeout(() => btn.innerText = 'Copy', 1500)
         })
         .catch(err => alert('Failed to copy: ' + err));
     }
@@ -194,7 +186,7 @@
     function saveIntoHistory() {
       if (output.textContent) {
         history.unshift(output.textContent);
-        if (history.length > maxHistory) history.pop();
+        if (history.length > MAX_HISTORY_LENGTH) history.pop();
         localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
         renderHistory();
       }
@@ -210,10 +202,7 @@
       input.value = '';
       field.value = '';
       addQuotes.checked = true;
-      output.textContent = '';
-      copyBtn.disabled = true;
-      saveIntoHistoryBtn.disabled = true;
-      clearInputsBtn.disabled = true;
+      generateClause();
     }
 
     function deleteHistoryItem(index) {
@@ -228,11 +217,11 @@
       if (match) {
         const fieldName = match[1].trim();
         const valuesStr = match[2].trim();
-        
+
         // Extract values and determine if they were quoted
         const values = [];
         let hasQuotes = false;
-        
+
         // Split by comma and clean up each value
         const rawValues = valuesStr.split(',');
         rawValues.forEach(val => {
@@ -245,12 +234,12 @@
             values.push(trimmed);
           }
         });
-        
+
         // Populate the form fields
         field.value = fieldName;
         input.value = values.join('\n');
         addQuotes.checked = hasQuotes;
-        
+
         // Trigger clause generation to update the output
         generateClause();
       }
@@ -274,7 +263,7 @@
         loadBtn.title = 'Load this clause into the input fields';
 
         const copyBtn = document.createElement('button');
-        copyBtn.onclick = copyClause;
+        copyBtn.onclick = () => copyClause(copyBtn, clause);
         copyBtn.innerText = 'Copy';
         copyBtn.title = 'Copy this saved clause to your clipboard';
 
