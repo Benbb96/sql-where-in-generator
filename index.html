@@ -113,12 +113,13 @@
 <body>
   <h1>SQL WHERE IN Generator</h1>
 
-  <textarea id="inputValues" rows="6" placeholder="Paste your values here, one per line"></textarea>
+  <textarea id="inputValues" rows="6" placeholder="Paste your values here, one per line"
+    oninput="generateClause()"></textarea>
 
-  <input type="text" id="fieldName" placeholder="Name of SQL field (default: sql_column)" />
+  <input type="text" id="fieldName" placeholder="Name of SQL field (default: sql_column)" oninput="generateClause()" />
 
   <label>
-    <input type="checkbox" id="addQuotes" checked />
+    <input type="checkbox" id="addQuotes" oninput="generateClause()" checked />
     Add quotes around values
   </label>
 
@@ -150,35 +151,32 @@
     const copyBtn = document.getElementById('copyBtn');
     const saveIntoHistoryBtn = document.getElementById('saveIntoHistory');
     const historyList = document.getElementById('historyList');
-    const maxHistory = 20;
+    const maxHistory = 15;
 
     const history = [];
 
-    function getInput() {
-      return input.value.split('\n').map(l => l.trim().replaceAll("'", "''")).filter(Boolean);
-    }
-
     function generateClause() {
-      const lines = getInput();
-      const column = field.value.trim() || 'sql_column';
-      const clause = `${column} IN (${lines.map(v => addQuotes.checked ? `'${v}'` : v).join(',')})`;
+      const lines = input.value.split('\n').map(l => l.trim().replaceAll("'", "''")).filter(Boolean);
+      if (lines.length) {
+        const column = field.value.trim() || 'sql_column';
+        const clause = `${column} IN (${lines.map(v => addQuotes.checked ? `'${v}'` : v).join(',')})`;
+        output.textContent = clause;
+      }
 
-      output.textContent = clause;
-      copyBtn.disabled = false;
-      saveIntoHistoryBtn.disabled = false;
+      copyBtn.disabled = lines.length === 0;
+      saveIntoHistoryBtn.disabled = lines.length === 0;
     }
 
-    if (getInput().length) {
-      generateClause()
-    }
-
-    input.addEventListener('input', generateClause);
-    field.addEventListener('input', generateClause);
-    addQuotes.addEventListener('input', generateClause);
+    generateClause()
 
     function copyClause(e) {
-      const clause = [...e.target.parentElement.children].find((child) => child.className === 'output').innerText;
-      navigator.clipboard.writeText(clause ?? output.textContent)
+      const clause = [...e.target.parentElement.children].find((child) => child.className === 'output')?.innerText;
+      if (!clause) {
+        alert('No generated clause were found');
+        return;
+      }
+
+      navigator.clipboard.writeText(clause)
         .then(() => {
           e.target.innerText = 'Copied!';
           setTimeout(() => e.target.innerText = 'Copy', 1500)
