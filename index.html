@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SQL WHERE IN Generator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f4f4f4;
+      color: #222;
+      margin: 2rem;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1 {
+      font-size: 1.5rem;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: monospace;
+      resize: vertical;
+    }
+    label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      margin-right: 0.5rem;
+      border: none;
+      background-color: #0066cc;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button.info {
+      background-color: #56b0ff;
+    }
+    button.warning {
+      background-color: #f29b3e;
+    }
+    button:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+    .output {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+    #copyBtn {
+      margin-top: 1rem;
+    }
+    h3 {
+      margin-top: 3rem;
+      margin-bottom: 0.5rem;
+    }
+    .history {
+      margin-top: 2rem;
+    }
+    .history h2 {
+      margin-bottom: 0.5rem;
+      display: flex;
+      gap: 1rem;
+    }
+    .history .history-container {
+      display: flex;
+      align-items: stretch;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .history .history-container .output {
+      display: flex;
+      align-items: center;
+      height: 100%;
+    }
+    .history .history-container button {
+      align-self: center;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h1>SQL WHERE IN Generator</h1>
+
+  <textarea id="inputValues" rows="6" placeholder="Paste your values here, one per line"></textarea>
+
+  <input type="text" id="fieldName" placeholder="Name of SQL field (default: sql_column)" />
+
+  <label>
+    <input type="checkbox" id="addQuotes" checked />
+    Add quotes around values
+  </label>
+
+  <h3>Generated WHERE clause</h3>
+  <div id="output" class="output"></div>
+
+  <button onclick="copyClause(event)" id="copyBtn" disabled>Copy</button>
+  <button class="info" onclick="saveIntoHistory()" id="saveIntoHistory" disabled>Save into history</button>
+
+  <div class="history">
+    <h2>
+      History
+      <button class="warning" onclick="clearHistory()">Clear</button>
+    </h2>
+    <div id="historyList"></div>
+  </div>
+
+  <script>
+    const input = document.getElementById('inputValues');
+    const field = document.getElementById('fieldName');
+    const addQuotes = document.getElementById('addQuotes');
+    const output = document.getElementById('output');
+    const copyBtn = document.getElementById('copyBtn');
+    const saveIntoHistoryBtn = document.getElementById('saveIntoHistory');
+    const historyList = document.getElementById('historyList');
+    const maxHistory = 20;
+
+    const history = [];
+
+    function getInput() {
+      return input.value.split('\n').map(l => l.trim().replace("'", "''")).filter(Boolean);
+    }
+
+    function generateClause() {
+      const lines = getInput();
+      const column = field.value.trim() || 'sql_column';
+      const clause = `${column} IN (${lines.map(v => addQuotes.checked ? `'${v}'` : v).join(',')})`;
+
+      output.textContent = clause;
+      copyBtn.disabled = false;
+      saveIntoHistoryBtn.disabled = false;
+    }
+
+    if (getInput().length) {
+      generateClause()
+    }
+
+    input.addEventListener('input', generateClause);
+    field.addEventListener('input', generateClause);
+    addQuotes.addEventListener('input', generateClause);
+
+    function copyClause(e) {
+      const clause = [...e.target.parentElement.children].find((child) => child.className === 'output').innerText;
+      navigator.clipboard.writeText(clause ?? output.textContent)
+        .then(() => {
+          e.target.innerText = 'Copied!';
+          setTimeout(() => e.target.innerText = 'Copy', 1500)
+        })
+        .catch(err => alert('Failed to copy: ' + err));
+    }
+
+    function saveIntoHistory() {
+      if (output.textContent) {
+        history.unshift(output.textContent);
+        if (history.length > maxHistory) history.pop();
+        renderHistory();
+      }
+    }
+
+    function clearHistory() {
+      history.length = 0;
+      renderHistory();
+    }
+
+    function renderHistory() {
+      historyList.innerHTML = '';
+      history.forEach(clause => {
+        const container = document.createElement('div');
+        container.className = 'history-container';
+
+        const div = document.createElement('div');
+        div.className = 'output';
+        div.title = clause;
+        div.textContent = clause;
+
+        const copyBtn = document.createElement('button');
+        copyBtn.onclick = copyClause;
+        copyBtn.innerText = 'Copy';
+
+        container.appendChild(div);
+        container.appendChild(copyBtn);
+        historyList.appendChild(container);
+      });
+    }
+  </script>
+</body>
+</html>
