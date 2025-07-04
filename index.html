@@ -132,6 +132,9 @@
     disabled>
     Save into history
   </button>
+  <button class="warning" onclick="clearInputs()" title="Clear all input fields">
+    Clear inputs
+  </button>
 
   <div class="history">
     <h2>
@@ -200,6 +203,15 @@
       history.length = 0;
       localStorage.removeItem(HISTORY_STORAGE_KEY);
       renderHistory();
+    }
+
+    function clearInputs() {
+      input.value = '';
+      field.value = '';
+      addQuotes.checked = true;
+      output.textContent = '';
+      copyBtn.disabled = true;
+      saveIntoHistoryBtn.disabled = true;
     }
 
     function deleteHistoryItem(index) {
