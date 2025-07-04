@@ -131,7 +131,7 @@
     const history = [];
 
     function getInput() {
-      return input.value.split('\n').map(l => l.trim().replace("'", "''")).filter(Boolean);
+      return input.value.split('\n').map(l => l.trim().replaceAll("'", "''")).filter(Boolean);
     }
 
     function generateClause() {
