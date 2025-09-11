@@ -7,3 +7,7 @@ You can use this web app to generates a SQL WHERE IN clause based on an input of
 You can also save your generated clauses into history (saved in localStorage).
 
 ![Demo screenshot of the app](demo.png "Demo screenshot of the app")
+
+## Use locally
+
+If you prefer to use this app locally, you can simply download the file [index.html](index.html) and open it in your browser.
